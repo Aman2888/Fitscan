@@ -6,3 +6,9 @@ export interface AnalysisResult {
   formattingFlags: string[];
   suggestions: string[];
 }
+
+export interface ChecklistItem {
+  label: string;
+  passed: boolean;
+  detail: string;
+}

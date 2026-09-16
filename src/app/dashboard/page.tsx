@@ -4,25 +4,33 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, FileUp, X } from "lucide-react";
 import ResultPanel from "@/components/ResultPanel";
-import type { AnalysisResult } from "@/lib/types";
+import { runRecruiterChecklist } from "@/lib/atsChecks";
+import type { AnalysisResult, ChecklistItem } from "@/lib/types";
 
 export default function DashboardPage() {
   const [jobDescription, setJobDescription] = useState("");
   const [resumeText, setResumeText] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
+  const [documentFlags, setDocumentFlags] = useState<string[]>([]);
+  const [wasPdf, setWasPdf] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
 
   async function handleFile(file: File) {
     setFileName(file.name);
     if (file.type === "application/pdf") {
+      setWasPdf(true);
       const formData = new FormData();
       formData.append("file", file);
       const res = await fetch("/api/extract-pdf", { method: "POST", body: formData });
       const data = await res.json();
       setResumeText(data.text ?? "");
+      setDocumentFlags(data.documentFlags ?? []);
     } else {
+      setWasPdf(false);
+      setDocumentFlags([]);
       const text = await file.text();
       setResumeText(text);
     }
@@ -37,16 +45,22 @@ export default function DashboardPage() {
     setLoading(true);
     setResult(null);
     try {
+      // Deterministic checks run locally instant, free, no AI involved.
+      setChecklist(runRecruiterChecklist(resumeText, jobDescription));
+
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jobDescription, resumeText }),
       });
-      if (!res.ok) throw new Error("Analysis failed");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || data.error || "Analysis failed");
+      }
       const data = await res.json();
       setResult(data);
-    } catch {
-      setError("Something went wrong while scanning. Try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong while scanning. Try again.");
     } finally {
       setLoading(false);
     }
@@ -96,6 +110,8 @@ export default function DashboardPage() {
                     e.preventDefault();
                     setFileName(null);
                     setResumeText("");
+                    setDocumentFlags([]);
+                    setWasPdf(false);
                   }}
                   className="hover:text-gap"
                 />
@@ -131,7 +147,12 @@ export default function DashboardPage() {
 
       {result && (
         <div className="mx-auto max-w-6xl px-6 pt-16 pb-24">
-          <ResultPanel result={result} />
+          <ResultPanel
+            result={result}
+            checklist={checklist}
+            documentFlags={documentFlags}
+            showDocumentSection={wasPdf}
+          />
         </div>
       )}
     </div>

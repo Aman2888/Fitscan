@@ -1,7 +1,26 @@
-import { CheckCircle2, XCircle, AlertTriangle, Lightbulb } from "lucide-react";
-import type { AnalysisResult } from "@/lib/types";
+import {
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Lightbulb,
+  ClipboardCheck,
+  FileSearch,
+} from "lucide-react";
+import type { AnalysisResult, ChecklistItem } from "@/lib/types";
 
-export default function ResultPanel({ result }: { result: AnalysisResult }) {
+interface ResultPanelProps {
+  result: AnalysisResult;
+  checklist?: ChecklistItem[];
+  documentFlags?: string[];
+  showDocumentSection?: boolean;
+}
+
+export default function ResultPanel({
+  result,
+  checklist = [],
+  documentFlags = [],
+  showDocumentSection = false,
+}: ResultPanelProps) {
   const scoreColor =
     result.matchScore >= 75 ? "text-match" : result.matchScore >= 50 ? "text-ink" : "text-gap";
 
@@ -52,11 +71,71 @@ export default function ResultPanel({ result }: { result: AnalysisResult }) {
         </div>
       </div>
 
+      {checklist.length > 0 && (
+        <div className="mt-14 border-t border-line pt-10">
+          <div className="flex items-baseline justify-between">
+            <h3 className="flex items-center gap-2 font-display text-lg font-semibold">
+              <ClipboardCheck size={18} className="text-ink" />
+              Recruiter checklist
+            </h3>
+            <span className="font-mono text-xs text-ink-soft">rule-based, not AI</span>
+          </div>
+          <p className="mt-1 text-xs text-ink-soft">
+            Deterministic checks encoding what recruiters actually look for same input, same
+            answer, every time.
+          </p>
+          <ul className="mt-5 space-y-4">
+            {checklist.map((item) => (
+              <li key={item.label} className="flex gap-3">
+                {item.passed ? (
+                  <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-match" />
+                ) : (
+                  <XCircle size={16} className="mt-0.5 shrink-0 text-gap" />
+                )}
+                <div>
+                  <p className="text-sm font-medium">{item.label}</p>
+                  <p className="text-xs text-ink-soft">{item.detail}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {showDocumentSection && (
+        <div className="mt-14 border-t border-line pt-10">
+          <div className="flex items-baseline justify-between">
+            <h3 className="flex items-center gap-2 font-display text-lg font-semibold">
+              <FileSearch size={18} className="text-ink" />
+              Document structure check
+            </h3>
+            <span className="font-mono text-xs text-ink-soft">read from the PDF itself</span>
+          </div>
+          <p className="mt-1 text-xs text-ink-soft">
+            Analyzed the actual text positions in your PDF not a guess from the AI.
+          </p>
+          {documentFlags.length > 0 ? (
+            <ul className="mt-5 space-y-2 text-sm text-ink-soft">
+              {documentFlags.map((flag) => (
+                <li key={flag} className="border-l-2 border-gap pl-3">
+                  {flag}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-5 flex items-center gap-2 text-sm text-match">
+              <CheckCircle2 size={16} />
+              No structural issues found single column, no scanned pages detected.
+            </p>
+          )}
+        </div>
+      )}
+
       {result.formattingFlags.length > 0 && (
         <div className="mt-10">
           <h3 className="flex items-center gap-2 font-display text-lg font-semibold">
             <AlertTriangle size={18} className="text-ink-soft" />
-            Formatting flags
+            AI-assessed formatting notes
           </h3>
           <ul className="mt-4 space-y-2 text-sm text-ink-soft">
             {result.formattingFlags.map((flag) => (
