@@ -37,13 +37,13 @@ async function callGemini(prompt: string, apiKey: string) {
 
     lastErrorText = await response.text();
 
-    // A daily quota being fully exhausted won't fix itself with a retry —
+    // A daily quota being fully exhausted won't fix itself with a retry 
     // it only resets at midnight Pacific. Fail fast with a clear message
     // instead of burning retries on something retrying can't solve.
     const isDailyQuotaExhausted = /PerDay/i.test(lastErrorText);
     if (isDailyQuotaExhausted) {
       throw new Error(
-        "Daily free-tier quota for this model is used up for today. It resets at midnight Pacific time — try again later, or switch to a different Gemini model/key."
+        "Daily free-tier quota for this model is used up for today. It resets at midnight Pacific time try again later, or switch to a different Gemini model/key."
       );
     }
 

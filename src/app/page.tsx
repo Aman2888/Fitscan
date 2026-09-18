@@ -124,7 +124,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-5xl px-6 py-20">
           <h2 className="font-display text-2xl font-semibold">More than a prompt</h2>
           <p className="mt-3 max-w-2xl text-sm text-ink-soft leading-relaxed">
-            Two parts of every scan don&apos;t touch an AI model at all — they run as plain
+            Two parts of every scan don&apos;t touch an AI model at all they run as plain
             deterministic code, so they give the exact same answer every time.
           </p>
           <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-2">
@@ -133,7 +133,7 @@ export default function LandingPage() {
               <h3 className="mt-3 font-display text-lg font-semibold">Recruiter checklist</h3>
               <p className="mt-2 text-sm text-ink-soft leading-relaxed">
                 Contact info, resume length, quantified achievements, action verbs, first-person
-                language, title match — encoded directly from real recruiting practice, not
+                language, title match encoded directly from real recruiting practice, not
                 asked of a language model.
               </p>
             </div>
@@ -142,7 +142,7 @@ export default function LandingPage() {
               <h3 className="mt-3 font-display text-lg font-semibold">Document structure check</h3>
               <p className="mt-2 text-sm text-ink-soft leading-relaxed">
                 Reads the actual text positions inside your PDF to catch multi-column layouts and
-                scanned/image pages — the layout mistakes that silently break real ATS parsers.
+                scanned/image pages the layout mistakes that silently break real ATS parsers.
               </p>
             </div>
           </div>

@@ -72,7 +72,7 @@ export default function RecruiterModePage() {
 
     setRunning(true);
 
-    // Sequential, not parallel — the free Gemini tier is rate-limited per
+    // Sequential, not parallel the free Gemini tier is rate-limited per
     // minute, and running candidates one at a time keeps this safely under
     // that limit regardless of batch size.
     for (const candidate of candidates) {
@@ -114,7 +114,7 @@ export default function RecruiterModePage() {
         );
       }
 
-      // Small gap between candidates — kinder to the free-tier rate limit
+      // Small gap between candidates kinder to the free-tier rate limit
       // than firing requests back-to-back.
       await new Promise((resolve) => setTimeout(resolve, 400));
     }
