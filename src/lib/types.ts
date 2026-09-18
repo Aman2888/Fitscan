@@ -12,3 +12,14 @@ export interface ChecklistItem {
   passed: boolean;
   detail: string;
 }
+
+export interface CandidateResult {
+  id: string;
+  fileName: string;
+  resumeText: string;
+  analysis: AnalysisResult | null;
+  checklist: ChecklistItem[];
+  documentFlags: string[];
+  status: "pending" | "scanning" | "done" | "error";
+  error?: string;
+}
