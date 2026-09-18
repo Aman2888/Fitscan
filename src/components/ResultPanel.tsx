@@ -7,6 +7,7 @@ import {
   FileSearch,
 } from "lucide-react";
 import type { AnalysisResult, ChecklistItem } from "@/lib/types";
+import { computeHybridScore } from "@/lib/scoring";
 
 interface ResultPanelProps {
   result: AnalysisResult;
@@ -21,21 +22,51 @@ export default function ResultPanel({
   documentFlags = [],
   showDocumentSection = false,
 }: ResultPanelProps) {
+  const { finalScore, components } = computeHybridScore(
+    result,
+    checklist,
+    documentFlags,
+    showDocumentSection
+  );
   const scoreColor =
-    result.matchScore >= 75 ? "text-match" : result.matchScore >= 50 ? "text-ink" : "text-gap";
+    finalScore >= 75 ? "text-match" : finalScore >= 50 ? "text-ink" : "text-gap";
 
   return (
     <div className="border-t border-ink pt-10">
       <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <p className="text-xs uppercase tracking-wide text-ink-soft">Match score</p>
+          <p className="text-xs uppercase tracking-wide text-ink-soft">Fitscan score</p>
           <p className={`font-display text-6xl font-semibold ${scoreColor}`}>
-            {result.matchScore}%
+            {finalScore}%
           </p>
         </div>
         <p className="max-w-md text-sm leading-relaxed text-ink-soft md:text-right">
           {result.summary}
         </p>
+      </div>
+
+      {/* The formula, visible not a single opaque AI number */}
+      <div className="mt-8 space-y-3">
+        {components.map((c) => (
+          <div key={c.label}>
+            <div className="flex items-baseline justify-between text-xs">
+              <span className="font-medium text-ink">
+                {c.label}{" "}
+                <span className="font-mono text-ink-soft">
+                  · {Math.round(c.weight * 100)}% weight
+                </span>
+              </span>
+              <span className="font-mono text-ink-soft">{Math.round(c.score)}/100</span>
+            </div>
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-line">
+              <div
+                className="h-full rounded-full bg-ink"
+                style={{ width: `${Math.round(c.score)}%` }}
+              />
+            </div>
+            <p className="mt-1 text-xs text-ink-soft">{c.detail}</p>
+          </div>
+        ))}
       </div>
 
       <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-2">

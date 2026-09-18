@@ -21,7 +21,7 @@ exact shape:
   "summary": "<one or two plain-English sentences on overall fit>",
   "missingKeywords": ["<important terms/skills from the JD absent from the resume>"],
   "matchedKeywords": ["<important terms/skills from the JD present in the resume>"],
-  "formattingFlags": ["<ATS-unfriendly formatting issues you can infer, e.g. tables, headers as images, missing section titles; empty array if none>"],
+  "formattingFlags": ["<ATS-unfriendly formatting issues you can infer from the text alone (e.g. missing standard section headers, unconventional section names, icons/symbols likely to break text extraction). Where relevant, name which real ATS platforms this specifically affects Workday, Taleo, and iCIMS are strict and fail hard on non-standard formatting; Greenhouse is more forgiving; Lever silently drops content rather than erroring. Empty array if none.>"],
   "suggestions": ["<3-6 concrete, specific edits the candidate should make, ordered by impact>"]
 }`;
 }

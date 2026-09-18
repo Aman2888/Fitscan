@@ -20,6 +20,7 @@ export interface CandidateResult {
   analysis: AnalysisResult | null;
   checklist: ChecklistItem[];
   documentFlags: string[];
+  isPdf: boolean;
   status: "pending" | "scanning" | "done" | "error";
   error?: string;
 }

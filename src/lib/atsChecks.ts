@@ -1,12 +1,5 @@
 import type { ChecklistItem } from "./types";
 
-// This file intentionally contains ZERO calls to any AI model. Everything
-// here is deterministic logic regexes, counts, and PDF geometry so it
-// runs instantly, costs nothing, and gives the exact same answer every time
-// for the same input. It's the product's answer to "isn't this just a
-// ChatGPT wrapper?": these checks encode recruiter know-how directly, not a
-// prompt.
-
 const STRONG_ACTION_VERBS = [
   "developed", "led", "built", "managed", "designed", "implemented",
   "created", "improved", "increased", "reduced", "coordinated", "launched",
@@ -152,16 +145,12 @@ export async function detectDocumentStructureFlags(
     const totalChars = items.reduce((sum, it) => sum + (it.str?.length ?? 0), 0);
     if (totalChars < 20) {
       flags.push(
-        `Page ${i} has almost no extractable text it may be an image or scan, which most ATS software can't read at all.`
+        `Page ${i} has almost no extractable text it may be an image or scan. No major ATS (Workday, Greenhouse, Lever, iCIMS, Taleo) can read text from an image.`
       );
       continue;
     }
 
-    // Bucket text items into rows by y-position, then check whether any row
-    // has items both well left-of-center and well right-of-center a sign
-    // of a two-column layout. ATS parsers read left-to-right across the
-    // full line and often scramble columns into the wrong order.
-    const pageWidth = viewport.width;
+  const pageWidth = viewport.width;
     const rows = new Map<number, number[]>();
     for (const it of items) {
       const x = it.transform[4];
@@ -179,7 +168,7 @@ export async function detectDocumentStructureFlags(
 
     if (twoColumnRows > 6) {
       flags.push(
-        `Page ${i} looks like a multi-column layout. Many ATS parsers misread multi-column text as jumbled or out of order.`
+        `Page ${i} looks like a multi-column layout. Workday, Taleo, and iCIMS are known to fail hard on this their parsers read left-to-right across the full page width, weaving both columns into one scrambled line. Lever tends to silently drop the sidebar column entirely, with no error shown. Greenhouse handles it better than the others but still recommends single-column.`
       );
     }
   }

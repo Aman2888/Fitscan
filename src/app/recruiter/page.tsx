@@ -12,6 +12,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { runRecruiterChecklist } from "@/lib/atsChecks";
+import { computeHybridScore } from "@/lib/scoring";
 import type { CandidateResult } from "@/lib/types";
 
 export default function RecruiterModePage() {
@@ -32,7 +33,8 @@ export default function RecruiterModePage() {
     for (const file of incoming) {
       let text = "";
       let documentFlags: string[] = [];
-      if (file.type === "application/pdf") {
+      const isPdf = file.type === "application/pdf";
+      if (isPdf) {
         const formData = new FormData();
         formData.append("file", file);
         const res = await fetch("/api/extract-pdf", { method: "POST", body: formData });
@@ -49,6 +51,7 @@ export default function RecruiterModePage() {
         analysis: null,
         checklist: [],
         documentFlags,
+        isPdf,
         status: "pending",
       });
     }
@@ -123,8 +126,12 @@ export default function RecruiterModePage() {
   }
 
   const ranked = [...candidates].sort((a, b) => {
-    const scoreA = a.analysis?.matchScore ?? -1;
-    const scoreB = b.analysis?.matchScore ?? -1;
+    const scoreA = a.analysis
+      ? computeHybridScore(a.analysis, a.checklist, a.documentFlags, a.isPdf).finalScore
+      : -1;
+    const scoreB = b.analysis
+      ? computeHybridScore(b.analysis, b.checklist, b.documentFlags, b.isPdf).finalScore
+      : -1;
     return scoreB - scoreA;
   });
 
@@ -142,7 +149,8 @@ export default function RecruiterModePage() {
         <h1 className="font-display text-3xl font-semibold">Screen candidates in bulk</h1>
         <p className="mt-2 max-w-xl text-sm text-ink-soft leading-relaxed">
           One job description, up to {MAX_CANDIDATES} resumes. Fitscan ranks every candidate by
-          match score so you can triage a stack of applicants in one pass.
+          a hybrid score AI semantic match, recruiter checklist, and document structure,
+          combined so you can triage a stack of applicants in one pass.
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -226,19 +234,28 @@ export default function RecruiterModePage() {
                       )}
                     </div>
                     <div className="flex items-center gap-4">
-                      {c.analysis && (
-                        <span
-                          className={`font-display text-lg font-semibold ${
-                            c.analysis.matchScore >= 75
-                              ? "text-match"
-                              : c.analysis.matchScore >= 50
-                              ? "text-ink"
-                              : "text-gap"
-                          }`}
-                        >
-                          {c.analysis.matchScore}%
-                        </span>
-                      )}
+                      {c.analysis &&
+                        (() => {
+                          const hybrid = computeHybridScore(
+                            c.analysis,
+                            c.checklist,
+                            c.documentFlags,
+                            c.isPdf
+                          );
+                          return (
+                            <span
+                              className={`font-display text-lg font-semibold ${
+                                hybrid.finalScore >= 75
+                                  ? "text-match"
+                                  : hybrid.finalScore >= 50
+                                  ? "text-ink"
+                                  : "text-gap"
+                              }`}
+                            >
+                              {hybrid.finalScore}%
+                            </span>
+                          );
+                        })()}
                       {c.checklist.length > 0 && (
                         <span className="font-mono text-xs text-ink-soft">
                           {c.checklist.filter((item) => item.passed).length}/
