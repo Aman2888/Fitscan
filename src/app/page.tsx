@@ -164,7 +164,7 @@ export default function LandingPage() {
       </section>
 
       <footer className="border-t border-line px-6 py-8 text-center text-xs text-ink-soft">
-        Built with Next.js, Tailwind, and the Claude API.
+        Built with Next.js, Tailwind, and API.
       </footer>
     </div>
   );
